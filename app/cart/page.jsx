@@ -1,0 +1,15 @@
+'use client';
+import {useEffect,useState} from 'react';import Link from 'next/link';
+const money=n=>'₹'+Number(n).toLocaleString('en-IN');
+const whatsappNumber='917511153509';
+export default function Cart(){
+  const [cart,setCart]=useState([]);
+  useEffect(()=>{setCart(JSON.parse(localStorage.getItem('vortex_cart')||'[]'))},[]);
+  const qty=cart.reduce((n,x)=>n+(x.quantity||1),0);
+  const subtotal=cart.reduce((n,x)=>n+x.price*(x.quantity||1),0);
+  const orderLines=cart.map((item,i)=>`${i+1}. ${item.name} · ${item.color||'Midnight Navy'} · Size ${item.size||'M'} · Qty ${item.quantity||1} · ${money(item.price*(item.quantity||1))}`).join('\n');
+  const orderMessage=`*NEW ORDER — VORTEX ATHLETICS*\n\n*ITEMS*\n${orderLines}\n\nSubtotal: ${money(subtotal)}\nShipping: FREE\nTotal: ${money(subtotal)}`;
+  const whatsappUrl=`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(orderMessage)}`;
+  function save(next){setCart(next);localStorage.setItem('vortex_cart',JSON.stringify(next));window.dispatchEvent(new Event('cart-update'))}
+  return <main className="page-shell"><section className="cart-page"><div className="cart-heading"><div><span className="eyebrow dark">YOUR NEXT SESSION STARTS HERE</span><h1>Your bag <sup>{qty}</sup></h1></div><Link className="text-link" href="/shop">← Keep exploring</Link></div>{cart.length?<div className="cart-layout"><div className="cart-lines">{cart.map((item,i)=><article className="cart-line" key={`${item.id}-${item.size}-${item.color}-${i}`}><img src={item.image} alt={item.name}/><div className="cart-product"><span className="eyebrow dark">VORTEX PERFORMANCE</span><h2>{item.name}</h2><p>{item.color||'Midnight Navy'} · Size {item.size||'M'}</p><button className="remove" aria-label={`Remove ${item.name} from bag`} title="Remove item" onClick={()=>save(cart.filter((_,j)=>j!==i))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m4 0-1 13H6L5 7m4 4v5m6-5v5"/></svg></button></div><div className="quantity-control"><button onClick={()=>{const next=[...cart];next[i].quantity=(next[i].quantity||1)-1;if(next[i].quantity<1)next.splice(i,1);save(next)}}>−</button><b>{item.quantity||1}</b><button onClick={()=>{const next=[...cart];next[i].quantity=(next[i].quantity||1)+1;save(next)}}>＋</button></div><strong>{money(item.price*(item.quantity||1))}</strong></article>)}</div><aside className="summary"><span className="eyebrow dark">ORDER AT A GLANCE</span><h2>Summary</h2><div><span>Subtotal</span><b>{money(subtotal)}</b></div><div><span>Express shipping</span><b className="green">Free</b></div><div className="total"><span>Total</span><b>{money(subtotal)}</b></div><p>Taxes included. Shipping on us.</p><a className="button coral full" href={whatsappUrl} target="_blank" rel="noopener noreferrer">Order via WhatsApp ↗</a><Link className="text-link center" href="/shop">Add another layer</Link></aside></div>:<div className="empty-state"><span>01 / EMPTY BAG</span><h2>Nothing in your bag. Yet.</h2><p>Great gear is one session away.</p><Link className="button dark-button" href="/shop">Explore the collection ↗</Link></div>}</section></main>
+}
